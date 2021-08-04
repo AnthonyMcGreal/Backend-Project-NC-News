@@ -23,3 +23,100 @@ describe("GET - /api/topics", () => {
       });
   });
 });
+
+describe("GET - /api/articles/:article_id", () => {
+  test("returns an article that matches the parametric endpoint given", () => {
+    return request(app)
+      .get("/api/articles/1")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article.article_id).toEqual(1);
+      });
+  });
+  test("should respond with status code 400 if article isnt found", () => {
+    return request(app)
+      .get("/api/articles/NaN")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual("Bad Request");
+      });
+  });
+});
+
+describe("PATCH - /api/articles/:article_id", () => {
+  it("should update the article object and return the updated article", () => {
+    const update = { inc_votes: 1 };
+
+    return request(app)
+      .patch("/api/articles/2")
+      .send(update)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article.votes).toEqual(1);
+        expect(body.article.article_id).toEqual(2);
+      });
+  });
+  it("handles errors the article id doesnt exist or is wrong", () => {
+    const update = { inc_votes: 1 };
+
+    return request(app)
+      .patch("/api/articles/NaN")
+      .send(update)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual("Bad Request");
+      });
+  });
+});
+
+describe.only("GET - /api/articles", () => {
+  it("should return a list of articles", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toEqual(12);
+      });
+  });
+  it("sorts the articles by date as the default sort_by", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  it("sorts the articles by the request sort_by method", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("author", { descending: true });
+      });
+  });
+  it("should default the sorted order to desc", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author")
+      .expect(200)
+      .then(({ body }) => {
+        //console.log(body.articles);
+        expect(body.articles).toBeSortedBy("author", { descending: true });
+      });
+  });
+  it("should sort by ascending too", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author&order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("author", { descending: false });
+      });
+  });
+  it.only("should allow the results to be filtered by a specified value", () => {
+    return request(app)
+      .get("/api/articles?topic=cats")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toEqual(1);
+      });
+  });
+});

@@ -78,6 +78,20 @@ describe.only("GET - /api/articles", () => {
         expect(body.articles.length).toEqual(12);
       });
   });
+  it("should return a list of articles with the expected keys", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles[0]).toHaveProperty("article_id");
+        expect(body.articles[0]).toHaveProperty("author");
+        expect(body.articles[0]).toHaveProperty("votes");
+        expect(body.articles[0]).toHaveProperty("comment_count");
+        expect(body.articles[0]).toHaveProperty("title");
+        expect(body.articles[0]).toHaveProperty("topic");
+        expect(body.articles[0]).toHaveProperty("created_at");
+      });
+  });
   it("sorts the articles by date as the default sort_by", () => {
     return request(app)
       .get("/api/articles")
@@ -111,7 +125,7 @@ describe.only("GET - /api/articles", () => {
         expect(body.articles).toBeSortedBy("author", { descending: false });
       });
   });
-  it.only("should allow the results to be filtered by a specified value", () => {
+  it("should allow the results to be filtered by a specified column", () => {
     return request(app)
       .get("/api/articles?topic=cats")
       .expect(200)
@@ -119,4 +133,8 @@ describe.only("GET - /api/articles", () => {
         expect(body.articles.length).toEqual(1);
       });
   });
+  // it('should return a 400 error if query isnt acceptable', () => {
+  //   return request(app)
+  //   .get('/api/articles?')
+  // })
 });

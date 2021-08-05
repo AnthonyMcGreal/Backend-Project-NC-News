@@ -4,7 +4,7 @@ const apiRouter = require("./routers/api.router");
 
 app.use(express.json());
 
-app.use("/api", apiRouter);
+app.use("/", apiRouter);
 
 app.use((err, req, res, next) => {
   if (err.code === "22P02") {

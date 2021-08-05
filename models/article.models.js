@@ -1,19 +1,20 @@
-const db = require("../db/connection");
-const format = require("pg-format");
+const db = require('../db/connection');
+const format = require('pg-format');
+const { formatPostCommentsData } = require('../db/utils/data-manipulation');
 
-exports.selectArticles = (sort_by = "created_at", order = "desc", topic) => {
+exports.selectArticles = (sort_by = 'created_at', order = 'desc', topic) => {
   const validSortBy = [
-    "created_at",
-    "author",
-    "votes",
-    "title",
-    "article_id",
-    "topic",
+    'created_at',
+    'author',
+    'votes',
+    'title',
+    'article_id',
+    'topic',
   ];
-  const validOrders = ["asc", "desc"];
+  const validOrders = ['asc', 'desc'];
 
   if (!validSortBy.includes(sort_by) || !validOrders.includes(order)) {
-    return Promise.reject({ status: 404, msg: "Bad Request" });
+    return Promise.reject({ status: 404, msg: 'Bad Request' });
   }
 
   const queryValues = [];
@@ -55,4 +56,43 @@ exports.updateArticleVotesById = (body, article_id) => {
     .then(({ rows }) => {
       return rows[0];
     });
+};
+
+exports.selectCommentsById = (article_id) => {
+  return db
+    .query(
+      `SELECT comment_id, votes, created_at,author,body
+  FROM comments
+  WHERE article_id = $1;
+  `,
+      [article_id]
+    )
+    .then(({ rows }) => {
+      return rows;
+    });
+};
+
+exports.insertCommentsById = (newComment) => {
+  let formattedData = formatPostCommentsData(newComment);
+  let inputUserString = format(
+    `INSERT INTO users
+  (username, name)
+  VALUES
+  %L;`,
+    [[formattedData[0][0], formattedData[0][0]]]
+  );
+
+  let inputString = format(
+    `INSERT INTO comments
+ (author, body)
+ VALUES
+ %L
+ RETURNING *;`,
+    formattedData
+  );
+  return db.query(inputUserString).then(() => {
+    return db.query(inputString).then(({ rows }) => {
+      return rows[0];
+    });
+  });
 };

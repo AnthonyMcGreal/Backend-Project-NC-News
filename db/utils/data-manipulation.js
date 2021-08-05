@@ -1,5 +1,5 @@
-const { articleData } = require("../data/development-data");
-const db = require("../connection.js");
+const { articleData } = require('../data/development-data');
+const db = require('../connection.js');
 
 // extract any functions you are using to manipulate your data, into this file
 exports.formatTopicData = (topicData) => {
@@ -57,4 +57,9 @@ exports.formatCommentData = (commentData, articleRef) => {
     return [created_by, articleRef[belongs_to], votes, created_at, body];
   });
   return arrayData;
+};
+
+exports.formatPostCommentsData = (postObject) => {
+  const newArray = Object.values(postObject);
+  return [newArray];
 };

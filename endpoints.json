@@ -23,5 +23,48 @@
         }
       ]
     }
+  },
+  "GET /api/articles/:article_id": {
+    "description": "serves up article object",
+    "params": "number denoting article_id",
+    "exampleResponse": {
+      "article": {
+        "article_id": 7,
+        "title": "Using React Native: One Year Later",
+        "body": "When I interviewed for the iOS developer opening at Discord last spring, the tech lead Stanislav told me: React Native is the future. We will use it to build our iOS app from scratch as soon as it becomes public. As a native iOS developer, I strongly doubted using web technologies to build mobile apps because of my previous experiences with tools like PhoneGap. But after learning and using React Native for a while, I am glad we made that decision.",
+        "votes": 0,
+        "topic": "coding",
+        "author": "tickle122",
+        "created_at": "2020-10-18T01:26:00.000Z"
+      }
+    }
+  },
+  "GET /api/articles/:article_id/comments": {
+    "description": "serves up an array of comments for a given article",
+    "params": "number denoting article_id",
+    "exampleResponse": {
+      "comments": [
+        {
+          "comment_id": 38,
+          "votes": 7,
+          "created_at": "2020-06-16T07:07:00.000Z",
+          "author": "jessjelly",
+          "body": "Ipsam quod dolor harum alias porro dignissimos vero et. Quia accusantium qui ratione eius qui."
+        }
+      ]
+    }
+  },
+  "POST /api/articles/:articles_id/comments": {
+    "description": "posts a comment to the given article",
+    "params": "number denoting article_id",
+    "POST format": "{ username: 'Ant', body: 'comment text' }",
+    "exampleResponse": {
+      "comment_id": 19,
+      "author": "Ant",
+      "article_id": null,
+      "votes": 0,
+      "created_at": "2021-08-06T11:58:06.484Z",
+      "body": "comment text"
+    }
   }
 }

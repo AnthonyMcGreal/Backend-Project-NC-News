@@ -169,7 +169,7 @@ describe('GET - /api/articles/:article_id/comments', () => {
 
 describe('POST - /api/articles/:article_id/comments', () => {
   it('should return a comment once posted', () => {
-    const postComment = { username: 'Ant', body: 'is this really working?' };
+    const postComment = { username: 'Ant', body: 'comment text' };
     return request(app)
       .post('/api/articles/1/comments')
       .send(postComment)
@@ -181,6 +181,7 @@ describe('POST - /api/articles/:article_id/comments', () => {
         expect(body.comment).toHaveProperty('comment_id');
         expect(body.comment).toHaveProperty('created_at');
         expect(body.comment).toHaveProperty('votes');
+        console.log(body.comment);
       });
   });
   it('returns a 400 Bad Request if body doesnt meet spec required', () => {

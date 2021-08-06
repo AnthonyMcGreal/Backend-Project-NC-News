@@ -4,6 +4,7 @@ const { seed } = require('../db/seeds/seed.js');
 const app = require('../app.js');
 const request = require('supertest');
 const { response } = require('../app.js');
+const e = require('express');
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -190,6 +191,18 @@ describe('POST - /api/articles/:article_id/comments', () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toEqual('Bad Request');
+      });
+  });
+});
+
+describe('GET - /api', () => {
+  it('returns a description of available endpoints', () => {
+    return request(app)
+      .get('/api')
+      .expect(200)
+      .then(({ body }) => {
+        expect(typeof body.endPoints).toEqual('object');
+        expect(body.endPoints).toHaveProperty('GET /api');
       });
   });
 });

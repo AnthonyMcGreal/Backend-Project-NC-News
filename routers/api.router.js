@@ -1,14 +1,10 @@
 const apiRouter = require('express').Router();
 const topicsRouter = require('./topicsRouter.js');
-const articleRouter = require('./articleRouter');
-const endpoints = require('../endpoints.json');
+const articleRouter = require('./articleRouter.js');
+const { getEndPoints } = require('../controllers/apiControllers.js');
 
-apiRouter.route('/', getApiInfo());
+apiRouter.route('/').get(getEndPoints);
 apiRouter.use('/topics', topicsRouter);
 apiRouter.use('/articles', articleRouter);
-
-getApiInfo = (req, res, next) => {
-  res.status(200).send(endpoints);
-};
 
 module.exports = apiRouter;

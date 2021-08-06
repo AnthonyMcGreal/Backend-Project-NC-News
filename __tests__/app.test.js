@@ -50,12 +50,12 @@ describe('PATCH - /api/articles/:article_id', () => {
     const update = { inc_votes: 1 };
 
     return request(app)
-      .patch('/api/articles/2')
+      .patch('/api/articles/1')
       .send(update)
       .expect(200)
       .then(({ body }) => {
-        expect(body.article.votes).toEqual(1);
-        expect(body.article.article_id).toEqual(2);
+        expect(body.article.votes).toEqual(101);
+        expect(body.article.article_id).toEqual(1);
       });
   });
   it('handles errors the article id doesnt exist or is wrong', () => {
@@ -181,7 +181,6 @@ describe('POST - /api/articles/:article_id/comments', () => {
         expect(body.comment).toHaveProperty('comment_id');
         expect(body.comment).toHaveProperty('created_at');
         expect(body.comment).toHaveProperty('votes');
-        console.log(body.comment);
       });
   });
   it('returns a 400 Bad Request if body doesnt meet spec required', () => {
@@ -205,5 +204,46 @@ describe('GET - /api', () => {
         expect(typeof body.endPoints).toEqual('object');
         expect(body.endPoints).toHaveProperty('GET /api');
       });
+  });
+});
+
+describe('DELETE /api/comments/:comment_id', () => {
+  it('should delete a comment based on its comment_id value', () => {
+    return request(app).delete('/api/comments/38').expect(204);
+  });
+  it(`should respond with 400 Bad Request if comment_id is bad`, () => {
+    return request(app).delete('/api/comments/notANumber').expect(400);
+  });
+});
+
+describe('GET /api/users', () => {
+  it('responds with an array of objects each having a username property', () => {
+    return request(app)
+      .get('/api/users')
+      .expect(200)
+      .then(({ body }) => {
+        body.users.forEach((user) => {
+          expect(user.hasOwnProperty('username')).toEqual(true);
+        });
+      });
+  });
+  it('responds with 404 if path doesnt exist', () => {
+    return request(app).get('/api/users1234').expect(404);
+  });
+});
+
+describe('GET /api/users/:username', () => {
+  it('should respond with a user object', () => {
+    return request(app)
+      .get('/api/users/butter_bridge')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.user).toHaveProperty('username');
+        expect(body.user).toHaveProperty('avatar_url');
+        expect(body.user).toHaveProperty('name');
+      });
+  });
+  it.only('should respond with 404 if user doesnt exist', () => {
+    return request(app).get('/api/users/anthony').expect(404);
   });
 });

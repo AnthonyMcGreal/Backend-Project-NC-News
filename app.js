@@ -16,12 +16,3 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = app;
-
-// GET /api
-
-// Hoisting
-
-// DELETE /api/comments/:comment_id
-// GET /api/users
-// GET /api/users/:username
-// PATCH /api/comments/:comment_id

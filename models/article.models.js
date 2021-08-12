@@ -130,3 +130,41 @@ exports.doesArticleExist = (article_id) => {
       return boolean;
     });
 };
+
+exports.insertArticle = (article) => {
+  const { author, title, body, topic } = article;
+  const formattedData = [[author, title, body, topic]];
+  if (
+    !article.hasOwnProperty('author') ||
+    !article.hasOwnProperty('title') ||
+    !article.hasOwnProperty('body') ||
+    !article.hasOwnProperty('topic')
+  ) {
+    return Promise.reject({ status: 400, msg: 'Bad Request' });
+  }
+
+  let inputString = format(
+    `INSERT INTO articles
+  (author,title,body,topic)
+  VALUES
+  %L
+  RETURNING *;`,
+    formattedData
+  );
+  return db
+    .query(inputString)
+    .then(({ rows }) => {
+      const article_id = rows[0].article_id;
+      return db.query(
+        `SELECT articles.article_id, title, articles.body, articles.votes, topic, articles.author, articles.created_at, COUNT(comments.article_id) AS comment_count FROM articles
+      LEFT JOIN comments
+      ON comments.article_id = articles.article_id
+      WHERE articles.article_id = $1
+      GROUP BY articles.article_id;`,
+        [article_id]
+      );
+    })
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};

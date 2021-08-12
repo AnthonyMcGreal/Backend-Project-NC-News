@@ -486,3 +486,121 @@ describe('PATCH - /api/comments/:comment_id', () => {
       });
   });
 });
+
+describe('POST - /api/articles', () => {
+  it('should post an article', () => {
+    const inputObj = {
+      author: 'lurker',
+      title: 'A Brave New Article',
+      body: 'Will this work?',
+      topic: 'mitch',
+    };
+
+    return request(app)
+      .post('/api/articles')
+      .send(inputObj)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.article).toHaveProperty('author');
+        expect(body.article).toHaveProperty('title');
+        expect(body.article).toHaveProperty('body');
+        expect(body.article).toHaveProperty('topic');
+        expect(body.article).toHaveProperty('article_id');
+        expect(body.article).toHaveProperty('votes');
+        expect(body.article).toHaveProperty('created_at');
+        expect(body.article).toHaveProperty('comment_count');
+      });
+  });
+  it('should return a 404 if given an author that doesnt exist', () => {
+    const inputObj = {
+      author: 'Ant',
+      title: 'A Brave New Article',
+      body: 'Will this work?',
+      topic: 'mitch',
+    };
+
+    return request(app)
+      .post('/api/articles')
+      .send(inputObj)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Not Found');
+      });
+  });
+  it('should return 400 if given input doesnt contain an author', () => {
+    const inputObj = {
+      title: 'A Brave New Article',
+      body: 'Will this work?',
+      topic: 'mitch',
+    };
+
+    return request(app)
+      .post('/api/articles')
+      .send(inputObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  it('should return 400 if given input doesnt contain a title', () => {
+    const inputObj = {
+      author: 'lurker',
+      body: 'Will this work?',
+      topic: 'mitch',
+    };
+
+    return request(app)
+      .post('/api/articles')
+      .send(inputObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  it('should return 400 if given input doesnt contain a body', () => {
+    const inputObj = {
+      author: 'lurker',
+      title: 'A Brave New Article',
+      topic: 'mitch',
+    };
+
+    return request(app)
+      .post('/api/articles')
+      .send(inputObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  it('should return 400 if given input doesnt contain a topic', () => {
+    const inputObj = {
+      author: 'lurker',
+      title: 'A Brave New Article',
+      body: 'Will this work?',
+    };
+
+    return request(app)
+      .post('/api/articles')
+      .send(inputObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  it('should return a 404 if given an topic that doesnt exist', () => {
+    const inputObj = {
+      author: 'lurker',
+      title: 'A Brave New Article',
+      body: 'Will this work?',
+      topic: 'I dont exist',
+    };
+
+    return request(app)
+      .post('/api/articles')
+      .send(inputObj)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Not Found');
+      });
+  });
+});

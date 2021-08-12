@@ -2,7 +2,14 @@ const db = require('../db/connection');
 const format = require('pg-format');
 const { formatPostCommentsData } = require('../db/utils/data-manipulation');
 
-exports.selectArticles = (sort_by = 'created_at', order = 'desc', topic) => {
+exports.selectArticles = (
+  sort_by = 'created_at',
+  order = 'desc',
+  topic,
+  limit = 10,
+  page = 1
+) => {
+  const offset = limit * page - limit;
   const validSortBy = [
     'created_at',
     'author',
@@ -22,18 +29,21 @@ exports.selectArticles = (sort_by = 'created_at', order = 'desc', topic) => {
     return Promise.reject({ status: 404, msg: 'Not Found' });
   }
 
-  const queryValues = [];
+  const queryValues = [limit, offset];
   let queryStr = `SELECT articles.article_id, title, articles.votes, topic, articles.author, articles.created_at, COUNT(comments.article_id) AS comment_count FROM articles
   LEFT JOIN comments
   ON comments.article_id = articles.article_id`;
 
   if (topic) {
-    queryStr += ` WHERE topic = $1`;
+    queryStr += ` WHERE topic = $3`;
     queryValues.push(topic);
   }
+
   queryStr += ` GROUP BY articles.article_id`;
 
-  queryStr += ` ORDER BY ${sort_by} ${order.toUpperCase()};`;
+  queryStr += ` ORDER BY ${sort_by} ${order.toUpperCase()} `;
+
+  queryStr += `LIMIT $1 OFFSET $2;`;
   return db.query(queryStr, queryValues).then((articles) => {
     return articles.rows;
   });

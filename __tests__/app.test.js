@@ -110,7 +110,7 @@ describe('GET - /api/articles', () => {
       .get('/api/articles')
       .expect(200)
       .then(({ body }) => {
-        expect(body.articles.length).toEqual(12);
+        expect(body.articles.length).toEqual(10);
       });
   });
   it('should return a list of articles with the expected keys', () => {
@@ -207,9 +207,49 @@ describe('GET - /api/articles', () => {
         expect(body.articles.length).toEqual(0);
       });
   });
+  it('should accept a Limit query', () => {
+    return request(app)
+      .get('/api/articles?limit=5')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toEqual(5);
+      });
+  });
+  it('should default to 10 when not passed a limit', () => {
+    return request(app)
+      .get('/api/articles')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toEqual(10);
+      });
+  });
+  it('responds with a 400 if givin an invalid limit query', () => {
+    return request(app)
+      .get('/api/articles?limit=notANumber')
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  it('takes a page query to filter results', () => {
+    return request(app)
+      .get('/api/articles?page=2')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toEqual(2);
+      });
+  });
+  it('responds with 400 if given an invalid page query', () => {
+    return request(app)
+      .get('/api/articles?page=notANumber')
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
 });
 
-describe.only('GET - /api/articles/:article_id/comments', () => {
+describe('GET - /api/articles/:article_id/comments', () => {
   it('should return a list of comments that match the required article_id', () => {
     return request(app)
       .get('/api/articles/1/comments')
@@ -408,7 +448,6 @@ describe('PATCH - /api/comments/:comment_id', () => {
       .send(inputObj)
       .expect(200)
       .then(({ body }) => {
-        console.log(body);
         expect(body.comment[0]).toHaveProperty('body');
         expect(body.comment[0].body).toEqual(expect.any(String));
       });

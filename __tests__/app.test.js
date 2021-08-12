@@ -94,7 +94,6 @@ describe('PATCH - /api/articles/:article_id', () => {
   });
   it('should respond with a 400 if user input is bad', () => {
     const input = { inc_votes: 'NaN' };
-    const input2 = { NotAField: 12 };
     return request(app)
       .patch('/api/articles/1')
       .send(input)
@@ -357,5 +356,54 @@ describe('GET /api/users/:username', () => {
   });
   it('should respond with 404 if user doesnt exist', () => {
     return request(app).get('/api/users/anthony').expect(404);
+  });
+});
+
+describe('PATCH - /api/comments/:comment_id', () => {
+  it('returns a comment after successfully updating its votes  ', () => {
+    const inputObj = { inc_votes: 5 };
+
+    return request(app)
+      .patch('/api/comments/1')
+      .send(inputObj)
+      .expect(200)
+      .then(({ body }) => {
+        console.log(body);
+        expect(body.comment[0]).toHaveProperty('body');
+        expect(body.comment[0].body).toEqual(expect.any(String));
+      });
+  });
+  it('returns a 404 if comment_id doesnt exist', () => {
+    const inputObj = { inc_votes: 5 };
+
+    return request(app)
+      .patch('/api/comments/123456')
+      .send(inputObj)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Not Found');
+      });
+  });
+  it('returns a 400 if input is bad', () => {
+    const inputObj = { inc_votes: 'notANumber' };
+
+    return request(app)
+      .patch('/api/comments/1')
+      .send(inputObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  it('returns a 400 if the input key is bad', () => {
+    const inputObj = { inotAVote: 5 };
+
+    return request(app)
+      .patch('/api/comments/1')
+      .send(inputObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
   });
 });

@@ -12,9 +12,14 @@ exports.selectArticles = (sort_by = 'created_at', order = 'desc', topic) => {
     'topic',
   ];
   const validOrders = ['asc', 'desc'];
+  const validTopics = ['mitch', 'cats', 'paper', undefined];
 
   if (!validSortBy.includes(sort_by) || !validOrders.includes(order)) {
-    return Promise.reject({ status: 404, msg: 'Bad Request' });
+    return Promise.reject({ status: 400, msg: 'Bad Request' });
+  }
+
+  if (!validTopics.includes(topic)) {
+    return Promise.reject({ status: 404, msg: 'Not Found' });
   }
 
   const queryValues = [];
@@ -29,7 +34,6 @@ exports.selectArticles = (sort_by = 'created_at', order = 'desc', topic) => {
   queryStr += ` GROUP BY articles.article_id`;
 
   queryStr += ` ORDER BY ${sort_by} ${order.toUpperCase()};`;
-  //console.log(queryStr);
   return db.query(queryStr, queryValues).then((articles) => {
     return articles.rows;
   });
@@ -38,8 +42,12 @@ exports.selectArticles = (sort_by = 'created_at', order = 'desc', topic) => {
 exports.selectArticlesById = (article_id) => {
   return db
     .query(
-      `SELECT * FROM articles 
-        WHERE article_id = $1;`,
+      `SELECT articles.article_id, title, articles.body, articles.votes, topic, articles.author, articles.created_at, COUNT(comments.article_id) AS comment_count
+      FROM articles
+      LEFT JOIN comments
+      ON comments.article_id = articles.article_id
+      WHERE articles.article_id = $1
+      GROUP BY articles.article_id`,
       [article_id]
     )
     .then((article) => {
@@ -48,6 +56,12 @@ exports.selectArticlesById = (article_id) => {
 };
 
 exports.updateArticleVotesById = (body, article_id) => {
+  if (!body.hasOwnProperty('inc_votes') || typeof body.inc_votes !== 'number') {
+    return Promise.reject({
+      status: 400,
+      msg: 'Bad Request',
+    });
+  }
   return db
     .query(
       `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *;`,
@@ -72,8 +86,8 @@ exports.selectCommentsById = (article_id) => {
     });
 };
 
-exports.insertCommentsById = (newComment) => {
-  let formattedData = formatPostCommentsData(newComment);
+exports.insertCommentsById = (newComment, article_id) => {
+  let formattedData = formatPostCommentsData(newComment, article_id);
   let inputUserString = format(
     `INSERT INTO users
   (username, name)
@@ -84,7 +98,7 @@ exports.insertCommentsById = (newComment) => {
 
   let inputString = format(
     `INSERT INTO comments
- (author, body)
+ (author, body, article_id)
  VALUES
  %L
  RETURNING *;`,
@@ -92,7 +106,24 @@ exports.insertCommentsById = (newComment) => {
   );
   return db.query(inputUserString).then(() => {
     return db.query(inputString).then(({ rows }) => {
+      console.log(rows);
       return rows[0];
     });
   });
+};
+
+exports.doesArticleExist = (article_id) => {
+  return db
+    .query(`SELECT article_id FROM articles`)
+    .then(({ rows }) => {
+      let currentArticleIds = [];
+      rows.forEach((article) => {
+        currentArticleIds.push(article.article_id);
+      });
+      return currentArticleIds;
+    })
+    .then((currentArticleIds) => {
+      let boolean = currentArticleIds.includes(+article_id);
+      return boolean;
+    });
 };

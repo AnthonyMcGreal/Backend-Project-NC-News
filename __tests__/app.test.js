@@ -4,7 +4,6 @@ const { seed } = require('../db/seeds/seed.js');
 const app = require('../app.js');
 const request = require('supertest');
 const { response } = require('../app.js');
-const e = require('express');
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -17,11 +16,10 @@ describe('GET - /api/topics', () => {
       .then(({ body }) => {
         const { topics } = body;
         expect(Array.isArray(topics)).toBe(true);
-        expect(body.topics).toEqual([
-          { slug: 'mitch', description: 'The man, the Mitch, the legend' },
-          { slug: 'cats', description: 'Not dogs' },
-          { slug: 'paper', description: 'what books are made of' },
-        ]);
+        topics.forEach((topic) => {
+          expect(topic).toHaveProperty('slug');
+          expect(topic).toHaveProperty('description');
+        });
       });
   });
 });
@@ -32,15 +30,30 @@ describe('GET - /api/articles/:article_id', () => {
       .get('/api/articles/1')
       .expect(200)
       .then(({ body }) => {
+        expect(body.article).toHaveProperty('article_id');
         expect(body.article.article_id).toEqual(1);
+        expect(body.article).toHaveProperty('title');
+        expect(body.article).toHaveProperty('body');
+        expect(body.article).toHaveProperty('votes');
+        expect(body.article).toHaveProperty('topic');
+        expect(body.article).toHaveProperty('author');
+        expect(body.article).toHaveProperty('created_at');
       });
   });
-  test('should respond with status code 400 if article isnt found', () => {
+  test('should respond with status code 400 if input isnt valid', () => {
     return request(app)
       .get('/api/articles/NaN')
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  test('should respond with code 404 if article doesnt exist', () => {
+    return request(app)
+      .get('/api/articles/9999')
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Not Found');
       });
   });
 });
@@ -58,12 +71,33 @@ describe('PATCH - /api/articles/:article_id', () => {
         expect(body.article.article_id).toEqual(1);
       });
   });
-  it('handles errors the article id doesnt exist or is wrong', () => {
+  it('handles errors where the article id doesnt exist or is wrong', () => {
     const update = { inc_votes: 1 };
 
     return request(app)
       .patch('/api/articles/NaN')
       .send(update)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  it('responds with 404 when input doesnt exist', () => {
+    const update = { inc_votes: 1 };
+    return request(app)
+      .patch('/api/articles/9999')
+      .send(update)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Not Found');
+      });
+  });
+  it('should respond with a 400 if user input is bad', () => {
+    const input = { inc_votes: 'NaN' };
+    const input2 = { NotAField: 12 };
+    return request(app)
+      .patch('/api/articles/1')
+      .send(input)
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toEqual('Bad Request');
@@ -85,13 +119,15 @@ describe('GET - /api/articles', () => {
       .get('/api/articles')
       .expect(200)
       .then(({ body }) => {
-        expect(body.articles[0]).toHaveProperty('article_id');
-        expect(body.articles[0]).toHaveProperty('author');
-        expect(body.articles[0]).toHaveProperty('votes');
-        expect(body.articles[0]).toHaveProperty('comment_count');
-        expect(body.articles[0]).toHaveProperty('title');
-        expect(body.articles[0]).toHaveProperty('topic');
-        expect(body.articles[0]).toHaveProperty('created_at');
+        body.articles.forEach((article) => {
+          expect(article).toHaveProperty('article_id');
+          expect(article).toHaveProperty('author');
+          expect(article).toHaveProperty('votes');
+          expect(article).toHaveProperty('comment_count');
+          expect(article).toHaveProperty('title');
+          expect(article).toHaveProperty('topic');
+          expect(article).toHaveProperty('created_at');
+        });
       });
   });
   it('sorts the articles by date as the default sort_by', () => {
@@ -110,6 +146,14 @@ describe('GET - /api/articles', () => {
         expect(body.articles).toBeSortedBy('author', { descending: true });
       });
   });
+  it('should return 400 when input sort_by is bad', () => {
+    return request(app)
+      .get('/api/articles?sort_by=bananas')
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
   it('should default the sorted order to desc', () => {
     return request(app)
       .get('/api/articles?sort_by=author')
@@ -118,7 +162,7 @@ describe('GET - /api/articles', () => {
         expect(body.articles).toBeSortedBy('author', { descending: true });
       });
   });
-  it('should sort by ascending too', () => {
+  it('should sort by ascending', () => {
     return request(app)
       .get('/api/articles?sort_by=author&order=asc')
       .expect(200)
@@ -126,12 +170,42 @@ describe('GET - /api/articles', () => {
         expect(body.articles).toBeSortedBy('author', { descending: false });
       });
   });
+  it('should sort by descending', () => {
+    return request(app)
+      .get('/api/articles?sort_by=author&order=desc')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy('author', { descending: true });
+      });
+  });
+  it('should return 400 when input order is bad', () => {
+    return request(app)
+      .get('/api/articles?order=bananas')
+      .expect(400)
+      .then(({ body }) => [expect(body.msg).toEqual('Bad Request')]);
+  });
   it('should allow the results to be filtered by a specified column', () => {
     return request(app)
       .get('/api/articles?topic=cats')
       .expect(200)
       .then(({ body }) => {
         expect(body.articles.length).toEqual(1);
+      });
+  });
+  it('should return 404 when filter topic is bad', () => {
+    return request(app)
+      .get('/api/articles?topic=bananas')
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Not Found');
+      });
+  });
+  it('should return 200 if topic is found but has 0 associated articles', () => {
+    return request(app)
+      .get('/api/articles?topic=paper')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toEqual(0);
       });
   });
 });
@@ -142,19 +216,21 @@ describe('GET - /api/articles/:article_id/comments', () => {
       .get('/api/articles/1/comments')
       .expect(200)
       .then(({ body }) => {
-        expect(body.comments[0]).toHaveProperty('comment_id');
-        expect(body.comments[0]).toHaveProperty('votes');
-        expect(body.comments[0]).toHaveProperty('created_at');
-        expect(body.comments[0]).toHaveProperty('author');
-        expect(body.comments[0]).toHaveProperty('body');
+        body.comments.forEach((comment) => {
+          expect(comment).toHaveProperty('comment_id');
+          expect(comment).toHaveProperty('votes');
+          expect(comment).toHaveProperty('created_at');
+          expect(comment).toHaveProperty('author');
+          expect(comment).toHaveProperty('body');
+        });
       });
   });
   it('should respond with a 404 if the id doesnt exist', () => {
     return request(app)
       .get('/api/articles/123456/comments')
       .expect(404)
-      .then(({ body }) => {
-        expect(body.msg).toEqual('Not Found');
+      .then((body) => {
+        expect(body.text).toEqual('Not Found');
       });
   });
   it('should respond with 400 if given an invalid', () => {
@@ -163,6 +239,14 @@ describe('GET - /api/articles/:article_id/comments', () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  it('should respond 200 i article exists but has no articles', () => {
+    return request(app)
+      .get('/api/articles/3/comments')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments).toEqual([]);
       });
   });
 });
@@ -191,6 +275,26 @@ describe('POST - /api/articles/:article_id/comments', () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  it('returns a 400 Bad Request if passed a bad article_id', () => {
+    const inputObj = { username: 'Ant', body: 'comment text' };
+    return request(app)
+      .post('/api/articles/NotAnId/comments')
+      .send(inputObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  it('should return a 404 if passed an article_id that doesnt exist', () => {
+    const inputObj = { username: 'Ant', body: 'comment text' };
+    return request(app)
+      .post('/api/articles/123456/comments')
+      .send(inputObj)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Not Found');
       });
   });
 });
@@ -238,12 +342,12 @@ describe('GET /api/users/:username', () => {
       .get('/api/users/butter_bridge')
       .expect(200)
       .then(({ body }) => {
-        expect(body.user).toHaveProperty('username');
-        expect(body.user).toHaveProperty('avatar_url');
-        expect(body.user).toHaveProperty('name');
+        expect(body.user[0]).toHaveProperty('username');
+        expect(body.user[0]).toHaveProperty('avatar_url');
+        expect(body.user[0]).toHaveProperty('name');
       });
   });
-  it.only('should respond with 404 if user doesnt exist', () => {
+  it('should respond with 404 if user doesnt exist', () => {
     return request(app).get('/api/users/anthony').expect(404);
   });
 });

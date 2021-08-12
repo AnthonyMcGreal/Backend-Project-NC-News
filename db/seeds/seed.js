@@ -1,5 +1,5 @@
-const db = require("../connection.js");
-const format = require("pg-format");
+const db = require('../connection.js');
+const format = require('pg-format');
 const {
   formatTopicData,
   formatUserData,
@@ -20,7 +20,7 @@ const seed = async ({ articleData, commentData, topicData, userData }) => {
   );`);
 
   await db.query(`CREATE TABLE users (
-    username VARCHAR(30) PRIMARY KEY NOT NULL,
+    username VARCHAR(60) PRIMARY KEY NOT NULL,
     avatar_url TEXT,
     name VARCHAR(60) NOT NULL
   );`);
@@ -29,20 +29,21 @@ const seed = async ({ articleData, commentData, topicData, userData }) => {
     article_id SERIAL PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
     body TEXT NOT NULL,
-    votes INT DEFAULT 0,
-    topic TEXT REFERENCES topics(slug),
+    votes INT DEFAULT 0 NOT NULL,
+    topic TEXT REFERENCES topics(slug) NOT NULL,
     author VARCHAR(60) REFERENCES users(username),
-    created_at TIMESTAMP DEFAULT current_timestamp
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );`);
 
   await db.query(`CREATE TABLE comments (
     comment_id SERIAL PRIMARY KEY,
-    author VARCHAR(60) REFERENCES users(username),
-    article_id INT REFERENCES articles(article_id),
-    votes INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT current_timestamp,
+    author VARCHAR(60) REFERENCES users(username) NOT NULL,
+    article_id INT REFERENCES articles(article_id) NOT NULL,
+    votes INT DEFAULT 0 NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     body TEXT
   );`);
+
   let insertTopicsData = format(
     `INSERT INTO topics
     (slug, description)
@@ -79,8 +80,8 @@ const seed = async ({ articleData, commentData, topicData, userData }) => {
 
   const articleRefData = await articleRef(
     newArticleData.rows,
-    "article_id",
-    "title"
+    'article_id',
+    'title'
   );
 
   let insertCommentsData = format(

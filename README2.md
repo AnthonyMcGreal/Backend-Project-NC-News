@@ -49,3 +49,11 @@ To run the app tests use the command line;
 To run the util tests use the command line;
 
     npm test util
+
+---
+
+## Minimum Versions
+
+Node 14.17.4
+
+PostgreSQL 9.6

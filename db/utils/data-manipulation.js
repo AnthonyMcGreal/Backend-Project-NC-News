@@ -3,43 +3,43 @@ const db = require('../connection.js');
 
 // extract any functions you are using to manipulate your data, into this file
 exports.formatTopicData = (topicData) => {
-  const result = topicData.map((dataObject) => {
+  const formattedData = topicData.map((dataObject) => {
     return [dataObject.slug, dataObject.description];
   });
-  return result;
+  return formattedData;
 };
 
 exports.formatUserData = (userData) => {
-  const result = userData.map((object) => {
-    return [object.username, object.avatar_url, object.name];
+  const formattedData = userData.map((userObject) => {
+    return [userObject.username, userObject.avatar_url, userObject.name];
   });
-  return result;
+  return formattedData;
 };
 
 exports.formatArticleData = (articleData) => {
-  const result = articleData.map((object) => {
+  const formattedData = articleData.map((article) => {
     return [
-      object.title,
-      object.body,
-      object.votes,
-      object.topic,
-      object.author,
-      object.created_at,
+      article.title,
+      article.body,
+      article.votes,
+      article.topic,
+      article.author,
+      article.created_at,
     ];
   });
-  return result;
+  return formattedData;
 };
 
 exports.renameKeys = (inputArr, keyToChange, newKey) => {
-  const newArr = [];
+  const formattedData = [];
   inputArr.forEach((object) => {
-    newArr.push({ ...object });
+    formattedData.push({ ...object });
   });
-  newArr.map((element) => {
+  form.map((element) => {
     element[newKey] = element[keyToChange];
     delete element[keyToChange];
   });
-  return newArr;
+  return formattedData;
 };
 
 exports.articleRef = (newArticleData, article_id, title) => {
@@ -51,15 +51,16 @@ exports.articleRef = (newArticleData, article_id, title) => {
 };
 
 exports.formatCommentData = (commentData, articleRef) => {
-  const arrayData = commentData.map((object) => {
-    if (Object.keys(object).length === 0) return [];
-    const { body, belongs_to, created_by, votes, created_at } = object;
+  const arrayData = commentData.map((comment) => {
+    if (Object.keys(comment).length === 0) return [];
+    const { body, belongs_to, created_by, votes, created_at } = comment;
     return [created_by, articleRef[belongs_to], votes, created_at, body];
   });
   return arrayData;
 };
 
-exports.formatPostCommentsData = (postObject) => {
-  const newArray = Object.values(postObject);
-  return [newArray];
+exports.formatPostCommentsData = (postObject, article_id) => {
+  const formattedData = Object.values(postObject);
+  formattedData.push(article_id);
+  return [formattedData];
 };

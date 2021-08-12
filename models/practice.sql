@@ -1,13 +1,7 @@
 \c nc_news_test
 
-INSERT INTO users
-(username, name)
-VALUES
-('ant', 'ant')
-RETURNING *;
+SELECT comment_id, votes, created_at,author,body, article_id
+FROM comments
+WHERE article_id = 3
 
-INSERT INTO comments
- (author, body)
- VALUES
- ('ant', 'this really working?') 
- RETURNING *;
+

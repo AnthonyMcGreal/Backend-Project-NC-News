@@ -318,10 +318,13 @@ describe('GET - /api', () => {
 
 describe('DELETE /api/comments/:comment_id', () => {
   it('should delete a comment based on its comment_id value', () => {
-    return request(app).delete('/api/comments/38').expect(204);
+    return request(app).delete('/api/comments/1').expect(204);
   });
   it(`should respond with 400 Bad Request if comment_id is bad`, () => {
     return request(app).delete('/api/comments/notANumber').expect(400);
+  });
+  it('should respond with a 404 if comment doesnt exist', () => {
+    return request(app).delete('/api/comments/256457623').expect(404);
   });
 });
 

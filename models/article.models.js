@@ -88,27 +88,17 @@ exports.selectCommentsById = (article_id) => {
 
 exports.insertCommentsById = (newComment, article_id) => {
   let formattedData = formatPostCommentsData(newComment, article_id);
-  let inputUserString = format(
-    `INSERT INTO users
-  (username, name)
-  VALUES
-  %L;`,
-    [[formattedData[0][0], formattedData[0][0]]]
-  );
 
   let inputString = format(
     `INSERT INTO comments
  (author, body, article_id)
  VALUES
  %L
- RETURNING *;`,
+ RETURNING author,body,article_id;`,
     formattedData
   );
-  return db.query(inputUserString).then(() => {
-    return db.query(inputString).then(({ rows }) => {
-      console.log(rows);
-      return rows[0];
-    });
+  return db.query(inputString).then(({ rows }) => {
+    return rows[0];
   });
 };
 

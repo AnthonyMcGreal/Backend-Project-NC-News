@@ -253,7 +253,7 @@ describe('GET - /api/articles/:article_id/comments', () => {
 
 describe('POST - /api/articles/:article_id/comments', () => {
   it('should return a comment once posted', () => {
-    const postComment = { username: 'Ant', body: 'comment text' };
+    const postComment = { username: 'icellusedkars', body: 'comment text' };
     return request(app)
       .post('/api/articles/1/comments')
       .send(postComment)
@@ -262,9 +262,6 @@ describe('POST - /api/articles/:article_id/comments', () => {
         expect(body.comment.author).toEqual(postComment.username);
         expect(body.comment.body).toEqual(postComment.body);
         expect(body.comment).toHaveProperty('article_id');
-        expect(body.comment).toHaveProperty('comment_id');
-        expect(body.comment).toHaveProperty('created_at');
-        expect(body.comment).toHaveProperty('votes');
       });
   });
   it('returns a 400 Bad Request if body doesnt meet spec required', () => {
@@ -278,7 +275,7 @@ describe('POST - /api/articles/:article_id/comments', () => {
       });
   });
   it('returns a 400 Bad Request if passed a bad article_id', () => {
-    const inputObj = { username: 'Ant', body: 'comment text' };
+    const inputObj = { username: 'icellusedkars', body: 'comment text' };
     return request(app)
       .post('/api/articles/NotAnId/comments')
       .send(inputObj)
@@ -288,7 +285,7 @@ describe('POST - /api/articles/:article_id/comments', () => {
       });
   });
   it('should return a 404 if passed an article_id that doesnt exist', () => {
-    const inputObj = { username: 'Ant', body: 'comment text' };
+    const inputObj = { username: 'icellusedkars', body: 'comment text' };
     return request(app)
       .post('/api/articles/123456/comments')
       .send(inputObj)
@@ -296,6 +293,14 @@ describe('POST - /api/articles/:article_id/comments', () => {
       .then(({ body }) => {
         expect(body.msg).toEqual('Not Found');
       });
+  });
+  it('should return a 404 if passed a user that doesnt exist', () => {
+    const inputObj = { username: 'Ant', body: 'comment text' };
+    return request(app)
+      .post('/api/articles/1/comments')
+      .send(inputObj)
+      .expect(404)
+      .then(({ body }) => [expect(body.msg).toEqual('Not Found')]);
   });
 });
 

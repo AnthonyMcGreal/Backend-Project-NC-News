@@ -45,12 +45,13 @@ exports.patchArticlesVotesById = (req, res, next) => {
 
 exports.getCommentsForArticleId = (req, res, next) => {
   const { article_id } = req.params;
+  const { limit, page } = req.query;
 
   doesArticleExist(article_id).then((response) => {
     if (response === false && +article_id > 0) {
       return res.status(404).send('Not Found');
     } else {
-      selectCommentsById(article_id)
+      selectCommentsById(article_id, limit, page)
         .then((comments) => {
           res.status(200).send({ comments });
         })

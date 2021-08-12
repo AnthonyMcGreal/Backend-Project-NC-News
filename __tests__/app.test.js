@@ -209,7 +209,7 @@ describe('GET - /api/articles', () => {
   });
 });
 
-describe('GET - /api/articles/:article_id/comments', () => {
+describe.only('GET - /api/articles/:article_id/comments', () => {
   it('should return a list of comments that match the required article_id', () => {
     return request(app)
       .get('/api/articles/1/comments')
@@ -246,6 +246,46 @@ describe('GET - /api/articles/:article_id/comments', () => {
       .expect(200)
       .then(({ body }) => {
         expect(body.comments).toEqual([]);
+      });
+  });
+  it('should accept a Limit query', () => {
+    return request(app)
+      .get('/api/articles/1/comments?limit=5')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments.length).toEqual(5);
+      });
+  });
+  it('should default to 10 when not passed a limit', () => {
+    return request(app)
+      .get('/api/articles/1/comments')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments.length).toEqual(10);
+      });
+  });
+  it('responds with a 400 if givin an invalid limit query', () => {
+    return request(app)
+      .get('/api/articles/1/comments?limit=notANumber')
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  it('takes a page query to filter results', () => {
+    return request(app)
+      .get('/api/articles/1/comments?page=2')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments.length).toEqual(3);
+      });
+  });
+  it('responds with 400 if given an invalid page query', () => {
+    return request(app)
+      .get('/api/articles/1/comments?page=notANumber')
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
       });
   });
 });

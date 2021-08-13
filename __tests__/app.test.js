@@ -605,7 +605,7 @@ describe('POST - /api/articles', () => {
   });
 });
 
-describe.only('POST  /api/topics', () => {
+describe('POST  /api/topics', () => {
   it('should post a new topic', () => {
     const inputObj = {
       slug: 'Im a new topic',
@@ -661,6 +661,28 @@ describe.only('POST  /api/topics', () => {
     return request(app)
       .post('/api/topics')
       .send(inputObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
+});
+
+describe.only('DELETE - /api/articles/:article_id', () => {
+  it('should delete an article matching the param article_id', () => {
+    return request(app).delete('/api/articles/1').expect(204);
+  });
+  it('should return 404 if article_id doesnt exist', () => {
+    return request(app)
+      .delete('/api/articles/123456')
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Not Found');
+      });
+  });
+  it('should return 404 if article_id doesnt exist', () => {
+    return request(app)
+      .delete('/api/articles/notANumber')
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toEqual('Bad Request');

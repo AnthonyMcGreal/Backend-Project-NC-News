@@ -6,6 +6,7 @@ const {
   insertCommentsById,
   doesArticleExist,
   insertArticle,
+  removeArticleById,
 } = require('../models/article.models');
 
 exports.getArticles = (req, res, next) => {
@@ -75,6 +76,19 @@ exports.postArticle = (req, res, next) => {
   insertArticle(req.body)
     .then((article) => {
       res.status(201).send({ article });
+    })
+    .catch(next);
+};
+
+exports.deleteArticlebyId = (req, res, next) => {
+  const { article_id } = req.params;
+
+  removeArticleById(article_id)
+    .then((article) => {
+      if (article.rows.length === 0) {
+        return Promise.reject({ status: 404, msg: 'Not Found' });
+      }
+      res.send(204);
     })
     .catch(next);
 };

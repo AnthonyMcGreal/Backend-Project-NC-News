@@ -54,6 +54,26 @@
       ]
     }
   },
+  "GET /api/users": {
+    "description": "serves up an array of all usernames",
+    "exampleResponse": [
+      { "username": "butter_bridge" },
+      { "username": "icellusedkars" },
+      { "username": "rogersop" },
+      { "username": "lurker" }
+    ]
+  },
+  "GET /api/users/:username": {
+    "description": "serves up an array containing a user object",
+    "params": "a valid username string",
+    "exampleResponse": [
+      {
+        "username": "butter_bridge",
+        "avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
+        "name": "jonny"
+      }
+    ]
+  },
   "POST /api/articles/:articles_id/comments": {
     "description": "posts a comment to the given article",
     "params": "number denoting article_id",
@@ -65,6 +85,37 @@
       "votes": 0,
       "created_at": "2021-08-06T11:58:06.484Z",
       "body": "comment text"
+    }
+  },
+  "POST /api/articles": {
+    "description": "will post an article to the articles table",
+    "POST format": {
+      "author": "lurker",
+      "title": " A Brave New Article",
+      "body": "Will this work?",
+      "topic": "mitch,"
+    },
+    "NOTE": "author and topic fields need to already exist",
+    "example response": {
+      "article_id": 13,
+      "title": "A Brave New Article",
+      "body": "Will this work?",
+      "votes": 0,
+      "topic": "mitch",
+      "author": "lurker",
+      "created_at": "2021-08-13T13:37:13.895Z",
+      "comment_count": 0
+    }
+  },
+  "POST /api/topics": {
+    "description": "will post a topic to the topics table",
+    "POST format": {
+      "slug": "Im a new topic",
+      "description": "my description here"
+    },
+    "example response": {
+      "slug": "Im a new topic",
+      "description": "my description here"
     }
   },
   "PATCH /api/articles/:article_id": {
@@ -81,8 +132,22 @@
       "created_at": "2020-07-09T20:11:00.000Z"
     }
   },
+  "PATCH /api/comments/:comment_id": {
+    "description": "patch a comment to increase its likes by given value, returning the article body",
+    "params": "number denoting the comments_id",
+    "PATCH format": "{inc_votes: *number*}",
+    "example response": [
+      {
+        "body": "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!"
+      }
+    ]
+  },
   "DELETE /api/comments/:comments_id": {
     "description": "deletes a comment that matches the provided comment_id",
     "params": "number denoting the comments_it"
+  },
+  "DELETE /api/articles/:article_id": {
+    "description": "deletes an article that matches the provided article_id",
+    "params": "number denoting article_id"
   }
 }

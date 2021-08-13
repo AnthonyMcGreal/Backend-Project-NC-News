@@ -668,7 +668,7 @@ describe('POST  /api/topics', () => {
   });
 });
 
-describe.only('DELETE - /api/articles/:article_id', () => {
+describe('DELETE - /api/articles/:article_id', () => {
   it('should delete an article matching the param article_id', () => {
     return request(app).delete('/api/articles/1').expect(204);
   });

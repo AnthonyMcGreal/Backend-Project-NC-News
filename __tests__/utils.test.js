@@ -494,13 +494,15 @@ describe('testing formatCommentData', () => {
 describe('testing formatPostCommentsData', () => {
   it('should return an array of the values in an object', () => {
     const input = { name: 'Ant' };
-    const output = [['Ant']];
-    expect(formatPostCommentsData(input)).toEqual(output);
+    const article_id = 1;
+    const output = [['Ant', 1]];
+    expect(formatPostCommentsData(input, article_id)).toEqual(output);
   });
   it('should work on larger objects', () => {
     const input = { name: 'Ant', age: 33, petName: 'Freya' };
-    const output = [['Ant', 33, 'Freya']];
-    expect(formatPostCommentsData(input)).toEqual(output);
+    const article_id = 1;
+    const output = [['Ant', 33, 'Freya', 1]];
+    expect(formatPostCommentsData(input, article_id)).toEqual(output);
   });
   it('doesnt mutate the original input', () => {
     const input = { name: 'Ant', age: 33, petName: 'Freya' };

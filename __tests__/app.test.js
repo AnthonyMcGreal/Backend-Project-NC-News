@@ -604,3 +604,66 @@ describe('POST - /api/articles', () => {
       });
   });
 });
+
+describe.only('POST  /api/topics', () => {
+  it('should post a new topic', () => {
+    const inputObj = {
+      slug: 'Im a new topic',
+      description: 'my description here',
+    };
+
+    return request(app)
+      .post('/api/topics')
+      .send(inputObj)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body).toHaveProperty('topic');
+        expect(body.topic).toHaveProperty('slug');
+        expect(body.topic).toHaveProperty('description');
+      });
+  });
+  it('should respond with 400 if input obj is doesnt contain the key slug', () => {
+    const inputObj = { description: 'my description here' };
+
+    return request(app)
+      .post('/api/topics')
+      .send(inputObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  it('should respond with 400 if input obj is doesnt contain the key slug', () => {
+    const inputObj = { slug: 'Im a new topic' };
+
+    return request(app)
+      .post('/api/topics')
+      .send(inputObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  it('should respond with 400 if topic key is empty', () => {
+    const inputObj = { topic: '', description: 'my description here' };
+
+    return request(app)
+      .post('/api/topics')
+      .send(inputObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
+  it('should respond with 400 if description key is empty', () => {
+    const inputObj = { topic: 'Im a new topic', description: '' };
+
+    return request(app)
+      .post('/api/topics')
+      .send(inputObj)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toEqual('Bad Request');
+      });
+  });
+});

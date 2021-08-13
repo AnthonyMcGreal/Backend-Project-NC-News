@@ -35,7 +35,7 @@ exports.renameKeys = (inputArr, keyToChange, newKey) => {
   inputArr.forEach((object) => {
     formattedData.push({ ...object });
   });
-  form.map((element) => {
+  formattedData.map((element) => {
     element[newKey] = element[keyToChange];
     delete element[keyToChange];
   });

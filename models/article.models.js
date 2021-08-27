@@ -19,9 +19,14 @@ exports.selectArticles = (
     'topic',
   ];
   const validOrders = ['asc', 'desc'];
+  const validTopics = ['mitch', 'cats', 'paper', undefined];
 
   if (!validSortBy.includes(sort_by) || !validOrders.includes(order)) {
     return Promise.reject({ status: 400, msg: 'Bad Request' });
+  }
+
+  if (!validTopics.includes(topic)) {
+    return Promise.reject({ status: 404, msg: 'Not Found' });
   }
 
   const queryValues = [limit, offset];

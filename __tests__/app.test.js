@@ -191,14 +191,6 @@ describe('GET - /api/articles', () => {
         expect(body.articles.length).toEqual(1);
       });
   });
-  it('should return 404 when filter topic is bad', () => {
-    return request(app)
-      .get('/api/articles?topic=bananas')
-      .expect(404)
-      .then(({ body }) => {
-        expect(body.msg).toEqual('Not Found');
-      });
-  });
   it('should return 200 if topic is found but has 0 associated articles', () => {
     return request(app)
       .get('/api/articles?topic=paper')
